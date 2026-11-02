@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: win
+  datasource:
+    url: jdbc:h2:file:./data/checkin;MODE=MySQL;DATABASE_TO_LOWER=TRUE;AUTO_SERVER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+app:
+  dev-mode: true
+  jwt-secret: ${APP_JWT_SECRET:win-demo-secret-key-please-change-1234567890}
+  admin-code: ${APP_ADMIN_CODE:dev-admin}
+  wechat:
+    app-id: ${WECHAT_APP_ID:}
+    secret: ${WECHAT_SECRET:}
+  admin-openids: ${APP_ADMIN_OPENIDS:}

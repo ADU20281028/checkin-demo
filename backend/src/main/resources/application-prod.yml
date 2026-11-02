@@ -1,0 +1,22 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+app:
+  dev-mode: false
+  jwt-secret: ${APP_JWT_SECRET}
+  admin-code: ${APP_ADMIN_CODE:}
+  wechat:
+    app-id: ${WECHAT_APP_ID}
+    secret: ${WECHAT_SECRET}
+  admin-openids: ${APP_ADMIN_OPENIDS:}

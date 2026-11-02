@@ -1,0 +1,21 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/checkin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:checkin}
+    password: ${DB_PASSWORD:checkin123}
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    show-sql: false
+
+app:
+  dev-mode: true
+  jwt-secret: ${APP_JWT_SECRET:dev-only-secret-key-change-before-production-123456}
+  admin-code: ${APP_ADMIN_CODE:dev-admin}
+  wechat:
+    app-id: ${WECHAT_APP_ID:}
+    secret: ${WECHAT_SECRET:}
+  admin-openids: ${APP_ADMIN_OPENIDS:}

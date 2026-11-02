@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微信签到 · 管理端</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<div id="loginView" class="login">
+  <div class="login-backdrop"></div>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-mark">签</div>
+      <div>
+        <strong>微信签到</strong>
+        <span>SIGN-IN CONSOLE</span>
+      </div>
+    </div>
+    <h1>管理端登录</h1>
+    <p class="login-sub">创建签到任务、投屏动态二维码、实时查看签到与缺勤数据</p>
+    <form id="loginForm">
+      <label class="field-label" for="loginCode">管理员登录码</label>
+      <input id="loginCode" class="input" value="dev-admin" autocomplete="off">
+      <div class="login-hint">开发模式下默认使用 <code>dev-admin</code>。生产环境请通过微信 openid 白名单授予管理员权限。</div>
+      <button type="submit" class="btn primary block" id="loginBtn">进入管理端</button>
+      <div id="loginError" class="form-error"></div>
+    </form>
+    <div class="login-foot">
+      <span>课程考勤</span><i></i><span>活动签到</span><i></i><span>数据统计</span>
+    </div>
+  </div>
+</div>
+
+<div id="appView" class="app hidden">
+  <aside class="sidebar">
+    <div class="side-brand">
+      <div class="brand-mark small">签</div>
+      <div class="side-brand-text">
+        <strong>微信签到</strong>
+        <span>管理端</span>
+      </div>
+    </div>
+
+    <nav class="side-nav">
+      <button class="nav-item active" data-view="overview">
+        <span class="nav-dot"></span>数据概览
+      </button>
+      <button class="nav-item" data-view="tasks">
+        <span class="nav-dot"></span>签到任务
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <div class="side-user">
+        <div class="side-avatar" id="sideAvatar">管</div>
+        <div class="side-user-info">
+          <strong id="sideUserName">管理员</strong>
+          <span>管理员</span>
+        </div>
+      </div>
+      <button class="logout" id="logoutBtn">退出登录</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">数据概览</h1>
+        <p id="pageSub">签到任务运行情况与今日数据</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn ghost" id="refreshBtn">刷新数据</button>
+        <button class="btn primary" id="newTaskBtn">+ 新建签到</button>
+      </div>
+    </header>
+
+    <section id="overviewView" class="view">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-label">注册用户</span>
+          <strong class="stat-value" id="statUsers">0</strong>
+          <span class="stat-note">小程序用户总数</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">签到任务</span>
+          <strong class="stat-value" id="statTasks">0</strong>
+          <span class="stat-note">累计发布任务</span>
+        </div>
+        <div class="stat-card accent">
+          <span class="stat-label">累计签到</span>
+          <strong class="stat-value" id="statCheckins">0</strong>
+          <span class="stat-note">有效签到记录</span>
+        </div>
+        <div class="stat-card warm">
+          <span class="stat-label">今日签到</span>
+          <strong class="stat-value" id="statToday">0</strong>
+          <span class="stat-note">当日新增记录</span>
+        </div>
+      </div>
+
+      <div class="overview-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>最近签到任务</h2>
+              <p>点击任务可查看二维码与签到名单</p>
+            </div>
+            <span class="panel-tag" id="ongoingTag">进行中 0</span>
+          </div>
+          <div id="recentList" class="recent-list"></div>
+        </div>
+
+        <div class="panel guide-panel">
+          <div class="panel-head">
+            <div>
+              <h2>使用流程</h2>
+              <p>从发布到统计的完整闭环</p>
+            </div>
+          </div>
+          <ol class="guide-list">
+            <li><span>01</span>创建签到任务，设置时间窗口与应到人数</li>
+            <li><span>02</span>投屏动态二维码，二维码按设定周期自动刷新</li>
+            <li><span>03</span>学生使用小程序扫码，服务端校验时间与重复提交</li>
+            <li><span>04</span>实时查看已签到名单、缺勤人数与出勤率</li>
+          </ol>
+          <div class="guide-note">
+            <strong>安全机制</strong>
+            <p>签到二维码与任务绑定并短期有效，重复签到由数据库唯一索引兜底。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tasksView" class="view hidden">
+      <div class="panel">
+        <div class="table-toolbar">
+          <div class="filter-group" id="filterGroup">
+            <button class="chip active" data-filter="all">全部</button>
+            <button class="chip" data-filter="ONGOING">进行中</button>
+            <button class="chip" data-filter="PENDING">未开始</button>
+            <button class="chip" data-filter="ENDED">已结束</button>
+          </div>
+          <input id="searchInput" class="input search" placeholder="搜索签到主题">
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>签到任务</th>
+                <th>时间窗口</th>
+                <th>状态</th>
+                <th>签到进度</th>
+                <th class="right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody"></tbody>
+          </table>
+          <div id="taskEmpty" class="table-empty hidden">
+            <strong>没有匹配的签到任务</strong>
+            <span>调整筛选条件，或新建一个签到任务</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="drawerMask" class="overlay hidden"></div>
+<aside id="detailDrawer" class="drawer hidden">
+  <header class="drawer-head">
+    <div class="drawer-title-wrap">
+      <h2 id="drawerTitle">签到任务</h2>
+      <p id="drawerTime"></p>
+    </div>
+    <button class="icon-btn" id="drawerClose" aria-label="关闭">×</button>
+  </header>
+
+  <div class="drawer-body">
+    <section class="qr-panel">
+      <div class="qr-frame">
+        <img id="qrImage" alt="签到二维码">
+        <div id="qrError" class="qr-error hidden">签到已结束，二维码停止刷新</div>
+      </div>
+      <div class="qr-side">
+        <div class="qr-countdown" id="qrCountdown">60s</div>
+        <p class="qr-tip">二维码每 <strong id="qrTtl">60</strong> 秒自动刷新<br>过期后旧二维码不可再用</p>
+        <button class="btn ghost small" id="qrRefresh">立即刷新</button>
+        <span class="qr-note">投屏展示，学生使用小程序扫码</span>
+      </div>
+    </section>
+
+    <div class="mini-stats">
+      <div><span>应到</span><strong id="drawerExpected">0</strong></div>
+      <div class="good"><span>已签到</span><strong id="drawerChecked">0</strong></div>
+      <div class="bad"><span>缺勤</span><strong id="drawerAbsent">0</strong></div>
+      <div><span>出勤率</span><strong id="drawerRate">0%</strong></div>
+    </div>
+
+    <section class="records-section">
+      <div class="section-head">
+        <h3>签到名单</h3>
+        <span id="drawerRecordCount">共 0 人</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table compact">
+          <thead>
+            <tr><th>用户</th><th>签到时间</th><th>方式</th></tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+        <div id="recordsEmpty" class="table-empty hidden">
+          <strong>暂无签到记录</strong>
+          <span>学生扫码后名单会实时更新</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</aside>
+
+<div id="modalMask" class="overlay hidden">
+  <div class="modal">
+    <header class="modal-head">
+      <div>
+        <h2>新建签到任务</h2>
+        <p>创建后立即生成动态签到二维码</p>
+      </div>
+      <button class="icon-btn" id="modalClose" aria-label="关闭">×</button>
+    </header>
+    <form id="createForm" class="form-grid">
+      <label class="form-field span-2">
+        <span>签到主题</span>
+        <input id="fTitle" class="input" maxlength="80" placeholder="例如：数据结构课程签到" required>
+      </label>
+      <label class="form-field">
+        <span>签到地点</span>
+        <input id="fLocation" class="input" maxlength="120" placeholder="例如：东教学楼 A302">
+      </label>
+      <label class="form-field">
+        <span>应到人数</span>
+        <input id="fExpected" class="input" type="number" min="0" value="0">
+        <small>填 0 时按系统内普通用户总数统计缺勤</small>
+      </label>
+      <label class="form-field">
+        <span>开始时间</span>
+        <input id="fStart" class="input" type="datetime-local" required>
+      </label>
+      <label class="form-field">
+        <span>结束时间</span>
+        <input id="fEnd" class="input" type="datetime-local" required>
+      </label>
+      <label class="form-field span-2">
+        <span>签到说明</span>
+        <textarea id="fDesc" class="input" rows="3" maxlength="500" placeholder="选填，补充签到要求"></textarea>
+      </label>
+      <label class="form-field">
+        <span>二维码有效期（秒）</span>
+        <input id="fTtl" class="input" type="number" min="30" max="600" value="60">
+      </label>
+      <div class="form-actions span-2">
+        <button type="button" class="btn ghost" id="cancelCreate">取消</button>
+        <button type="submit" class="btn primary" id="createBtn">创建并查看二维码</button>
+      </div>
+      <div id="createError" class="form-error span-2"></div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="./app.js"></script>
+</body>
+</html>
