@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>微信签到</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ 登录 ============ -->
+  <section id="view-login" class="screen">
+    <div class="scroll">
+      <div class="login-hero">
+        <div class="login-logo">签</div>
+        <h1 class="login-title">微信签到</h1>
+        <p class="login-sub">开发模式 · 选择身份进入</p>
+      </div>
+      <div class="card login-card">
+        <label class="field-label" for="login-api">服务地址</label>
+        <div class="api-row">
+          <input id="login-api" class="field-input" type="text" placeholder="https://你的后端域名，如 https://checkin-demo.onrender.com">
+          <button class="mini-btn" type="button" data-action="login-api-save">保存</button>
+        </div>
+        <div id="login-error" class="form-error hidden"></div>
+        <div id="login-identities" class="identity-list"></div>
+        <p class="login-tip">仅开发模式使用模拟身份登录，正式环境请接入微信授权。</p>
+      </div>
+      <p class="login-foot">版本 1.0.0 · 本科毕业设计</p>
+    </div>
+  </section>
+
+  <!-- ============ 主界面（底部 3 tab） ============ -->
+  <section id="view-main" class="screen hidden">
+    <header class="topbar">
+      <span id="topbar-title" class="topbar-title">微信签到</span>
+      <span id="topbar-sub" class="topbar-sub"></span>
+    </header>
+
+    <div id="main-scroll" class="scroll">
+      <!-- 首页：任务列表 -->
+      <section id="tab-home" class="tabview">
+        <div class="hero">
+          <div class="hero-row">
+            <div class="hero-left">
+              <div id="home-greeting" class="greeting">你好</div>
+              <div id="home-date" class="hero-date"></div>
+            </div>
+            <div id="home-avatar" class="avatar">?</div>
+          </div>
+          <div class="stat-panel">
+            <div class="stat-item">
+              <span id="home-ongoing" class="stat-num">0</span>
+              <span class="stat-label">进行中</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span id="home-upcoming" class="stat-num">0</span>
+              <span class="stat-label">待开始</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span id="home-checked" class="stat-num">0</span>
+              <span class="stat-label">已签到</span>
+            </div>
+          </div>
+          <button class="scan-btn" type="button" data-action="scan-open" data-context="home">
+            <span class="scan-mark">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>
+                <path d="M4 12h16"/>
+              </svg>
+            </span>
+            <span class="scan-text">
+              <span class="scan-title">扫码签到</span>
+              <span class="scan-desc">扫描老师提供的二维码</span>
+            </span>
+            <span class="scan-arrow">›</span>
+          </button>
+        </div>
+
+        <div class="content">
+          <div id="home-tabs" class="tabs">
+            <button class="tab tab-active" type="button" data-action="home-filter" data-filter="all">全部</button>
+            <button class="tab" type="button" data-action="home-filter" data-filter="ongoing">进行中</button>
+            <button class="tab" type="button" data-action="home-filter" data-filter="upcoming">未开始</button>
+            <button class="tab" type="button" data-action="home-filter" data-filter="ended">已结束</button>
+          </div>
+          <div id="home-body"></div>
+        </div>
+      </section>
+
+      <!-- 记录 -->
+      <section id="tab-records" class="tabview hidden">
+        <div class="records-head">
+          <div>
+            <div class="records-title">我的签到记录</div>
+            <div id="records-count" class="records-count">累计 0 次</div>
+          </div>
+          <button class="mini-btn" type="button" data-action="records-refresh">刷新</button>
+        </div>
+        <div id="pull-indicator" class="pull-indicator">下拉刷新</div>
+        <div id="records-body"></div>
+      </section>
+
+      <!-- 我的 -->
+      <section id="tab-mine" class="tabview hidden">
+        <div id="mine-body"></div>
+      </section>
+    </div>
+
+    <nav class="tabbar">
+      <button class="tab-item tab-active" type="button" data-action="tab" data-tab="home">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10.5 12 3l9 7.5"/>
+          <path d="M5.5 9.5V21h13V9.5"/>
+        </svg>
+        <span class="tab-name">首页</span>
+      </button>
+      <button class="tab-item" type="button" data-action="tab" data-tab="records">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="3" width="16" height="18" rx="2"/>
+          <path d="M8 8h8M8 12h8M8 16h5"/>
+        </svg>
+        <span class="tab-name">记录</span>
+      </button>
+      <button class="tab-item" type="button" data-action="tab" data-tab="mine">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
+        </svg>
+        <span class="tab-name">我的</span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- ============ 子页面（由 JS 渲染） ============ -->
+  <section id="view-task" class="screen overlay hidden"></section>
+  <section id="view-admin" class="screen overlay hidden"></section>
+  <section id="view-admintask" class="screen overlay hidden"></section>
+
+  <!-- ============ 扫码签到弹层 ============ -->
+  <div id="modal-scan" class="modal-mask hidden">
+    <div class="modal">
+      <div class="modal-title">扫码签到</div>
+      <div class="modal-desc">扫描老师出示的签到二维码，或手动输入令牌</div>
+      <button id="scan-native-btn" class="btn-primary modal-btn" type="button" data-action="scan-native">打开摄像头扫码</button>
+      <div id="scan-bridge-tip" class="modal-tip hidden">当前环境不支持摄像头扫码（缺少 AndroidBridge），请手动输入二维码令牌</div>
+      <div class="manual-box">
+        <div class="manual-label">手动输入令牌（降级方式）</div>
+        <textarea id="scan-token-input" class="field-textarea" rows="3" placeholder="粘贴或输入二维码内容（JWT 令牌）"></textarea>
+        <button class="btn-ghost modal-btn" type="button" data-action="scan-manual">提交签到</button>
+      </div>
+      <button class="modal-close" type="button" data-action="modal-close">取消</button>
+    </div>
+  </div>
+
+  <!-- ============ 通用消息弹层 ============ -->
+  <div id="modal-msg" class="modal-mask hidden">
+    <div class="modal">
+      <div id="msg-title" class="modal-title"></div>
+      <div id="msg-content" class="modal-desc pre-line"></div>
+      <button class="btn-primary modal-btn" type="button" data-action="msg-close">知道了</button>
+    </div>
+  </div>
+
+  <!-- ============ loading ============ -->
+  <div id="loading-mask" class="loading-mask hidden">
+    <div class="spinner"></div>
+    <div id="loading-text" class="loading-text">请稍候</div>
+  </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
